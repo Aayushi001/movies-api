@@ -69,7 +69,8 @@ let ctrl = {
 			});
 		}
 		const selectedMovies = Object.keys(conflicts);
-		res.send({selectedMovies, count: selectedMovies.length});
+		const amount = (selectedMovies.length * 10000000).toLocaleString('en-In');
+		res.send({selectedMovies, amount});
 	}
 }
 
