@@ -1,5 +1,7 @@
 # movies-api
 
+Clone the repo, run **npm i** to install node modules, then start the server.
+
 To start the server, run cmd: **node app.js**
 
 
