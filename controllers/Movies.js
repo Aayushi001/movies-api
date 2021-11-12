@@ -1,3 +1,4 @@
+const _ = require('lodash');
 
 const defaultMovies = [
 	{name: 'Bala', startDate: '8 Jan 2021', endDate: '28 Jan 2021'},
@@ -6,42 +7,57 @@ const defaultMovies = [
 	{name: 'Brave', startDate: '02 Feb 2021', endDate: '14 Feb 2021'},
 	{name: 'Drive', startDate: '10 Feb 2021', endDate: '18 Feb 2021'},
 	{name: 'Race', startDate: '15 Feb 2021', endDate: '28 Feb 2021'},
-]
+];
 
 let ctrl = {
   getMaxMovies: (req, res, next) => {
-		const allMovies = defaultMovies;
-		let s = 1;
-		let e = 0;
-		const conflicts = {};
-		while (s <= allMovies.length - 1 && e < allMovies.length - 1 && s>e) {
+		const allMovies = _.get(req.body, 'movies', defaultMovies);
+		let start = 1;
+		let end = 0;
+		let conflicts = {};
+		while (start <= allMovies.length - 1 && end < allMovies.length - 1 && start>end) {
 			// conflict if current Start < previous End
-			console.log('---------s', s, e)
-			if (new Date(allMovies[s].startDate) <= new Date(allMovies[e].endDate) && s !== e) {
-				if (!conflicts[allMovies[s].name])
-					conflicts[allMovies[s].name] = [];
-				if (!conflicts[allMovies[e].name])
-					conflicts[allMovies[e].name] = [];
-				conflicts[allMovies[s].name].push(allMovies[e].name);
-				conflicts[allMovies[e].name].push(allMovies[s].name);
-				if (s == allMovies.length - 1) {
-					e++;
-					s = e + 1;
+			if (new Date(allMovies[start].startDate) <= new Date(allMovies[end].endDate) && start !== end) {
+				if (!conflicts[allMovies[start].name])
+					conflicts[allMovies[start].name] = [];
+				if (!conflicts[allMovies[end].name])
+					conflicts[allMovies[end].name] = [];
+				conflicts[allMovies[start].name].push(allMovies[end].name);
+				conflicts[allMovies[end].name].push(allMovies[start].name);
+				if (start == allMovies.length - 1) {
+					end++;
+					start = end + 1;
 				}
 				else {
-					s++;
+					start++;
 				}
 			}
 			else {
-				e++;
-				s = e + 1;
+				end++;
+				start = end + 1;
 			}
 		}
-		console.log('-----conflicts', conflicts);
-		res.send(conflicts);
-
+		let max = -1;
+		let maxConflictingMovie = '';
+		while(max != 0) {
+			const names = Object.keys(conflicts);
+			max = 0;
+			_.forEach(names, (name) => {
+				if(conflicts[name].length > max) {
+					max = conflicts[name].length;
+					maxConflictingMovie = name;
+				}
+			});
+			delete conflicts[maxConflictingMovie];
+			_.forEach(names, (name) => {
+				if (name in conflicts)
+					conflicts[name] = conflicts[name].filter(f => f !== maxConflictingMovie);
+			});
+		}
+		const selectedMovies = Object.keys(conflicts);
+		res.send({selectedMovies, count: selectedMovies.length});
 	}
 }
 
 
-module.exports = ctrl;
+module.exports = ctrl; 
