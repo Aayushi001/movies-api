@@ -9,9 +9,23 @@ const defaultMovies = [
 	{name: 'Race', startDate: '15 Feb 2021', endDate: '28 Feb 2021'},
 ];
 
+const sortByDates = (movies) => {
+	movies.sort((pre, curr) => {
+		let previousStart = new Date(pre.startDate).getTime();
+		let currentStart = new Date(curr.startDate).getTime();
+		if (previousStart <= currentStart) {
+			return -1;
+		}
+		else {
+			return 1;
+		}
+	})
+}
+
 let ctrl = {
   getMaxMovies: (req, res, next) => {
 		const allMovies = _.get(req.body, 'movies', defaultMovies);
+		sortByDates(allMovies);
 		let start = 1;
 		let end = 0;
 		let conflicts = {};
